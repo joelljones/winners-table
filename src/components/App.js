@@ -25,14 +25,14 @@ function getTomorrowsDate() {
 }
 const tomorrowsDate = getTomorrowsDate();
 
-const date = todaysDate;
-
 // FETCH
-fetch(
-  `https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${date}`,
-)
-  .then((res) => res.json()) // parse response as JSON
-  .then((data) => {
+async function getFetch(date) {
+  try {
+    const res = await fetch(
+      `https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${date}`,
+    );
+    const data = await res.json();
+
     // TODAY OR TOMORROW
     date === todaysDate ? console.log("TODAY") : console.log("TOMORROW");
 
@@ -62,6 +62,8 @@ fetch(
       this.record = record;
       this.odds = odds;
     }
+
+    // PROJECTED WINNERS ARRAY
     const winnersTable = [];
 
     // loop through events
@@ -84,7 +86,7 @@ fetch(
       const formattedTime = utcTime.toLocaleString("en-US", options);
 
       // EVENT NAME
-      const eventName = event.name;
+      // const eventName = event.name;
 
       // HOME TEAM
       const homeTeamLogo = event.competitions[0].competitors[0].team.logo;
@@ -161,6 +163,7 @@ fetch(
         winnersTable.push(matchObject);
       }
     }
+
     // TABLE TO BE PRINTED TO CONSOLE
     const tableToPrint = winnersTable.map(
       ({
@@ -190,7 +193,12 @@ fetch(
 
     // console.table
     console.table(tableToPrint);
-  })
-  .catch((err) => {
+  } catch (err) {
     console.log(`error ${err}`);
-  });
+  }
+}
+
+(async () => {
+  await getFetch(todaysDate);
+  await getFetch(tomorrowsDate);
+})();
