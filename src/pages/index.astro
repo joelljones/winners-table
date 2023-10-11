@@ -1,12 +1,12 @@
 ---
-import ReactApp from "../components/ReactApp";
-import Table from "../components/Table.astro";
+// import ReactApp from "../components/ReactApp";
+import Script from "../components/Script.astro";
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Sports">
-  <main class="grid justify-center p-12">
-    <Table />
-    <ReactApp client:load />
+  <main id="main" class="grid justify-center p-12">
+    <Script />
+    <!-- <ReactApp client:load /> -->
   </main>
 </Layout>
