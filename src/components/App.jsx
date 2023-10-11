@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function ReactApp() {
+function App() {
   const [matchesByLeague, setMatchesByLeague] = useState({
     today: {},
     tomorrow: {},
@@ -217,4 +217,4 @@ function ReactApp() {
   );
 }
 
-export default ReactApp;
+export default App;
