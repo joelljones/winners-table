@@ -1,7 +1,7 @@
 <!--
-TODO: update for mobile view
+TODO: get team logos & update mobile view
 TODO: update styling
-TODO: update team logos
+
 -->
 <script>
   // TODAY
@@ -206,7 +206,7 @@ TODO: update team logos
         "divide-y",
         "rounded-3xl",
         "border",
-        "p-2",
+        "px-2",
       );
 
       section.appendChild(h2);
@@ -216,11 +216,12 @@ TODO: update team logos
       for (const league in matchesByLeague) {
         // create leagueTableDiv element
         const leagueTableDiv = document.createElement("div");
+        leagueTableDiv.classList.add("py-4");
         cardDiv.appendChild(leagueTableDiv);
 
         // leagueRowDiv element
         const leagueRowDiv = document.createElement("div");
-        leagueRowDiv.classList.add("flex", "items-center", "pb-2", "pt-1");
+        leagueRowDiv.classList.add("flex", "items-center", "pb-2");
         leagueTableDiv.appendChild(leagueRowDiv);
 
         // // flagLogoColumnDiv element
@@ -247,13 +248,7 @@ TODO: update team logos
         for (const match of matchesByLeague[league]) {
           // create matchRowDiv element
           const matchRowDiv = document.createElement("div");
-          matchRowDiv.classList.add(
-            "flex",
-            "items-center",
-            "divide-x",
-            "py-1",
-            "h-20",
-          );
+          matchRowDiv.classList.add("flex", "items-center", "divide-x", "h-16");
           leagueTableDiv.appendChild(matchRowDiv);
 
           // timeColumnDiv element
@@ -264,18 +259,12 @@ TODO: update team logos
 
           // homeAwayColumnDiv element
           const homeAwayColumnDiv = document.createElement("div");
-          homeAwayColumnDiv.classList.add(
-            "flex",
-            "flex-col",
-            // "pl-2",
-            // "pr-2",
-            "w-72",
-          );
+          homeAwayColumnDiv.classList.add("flex", "flex-col", "sm:w-60");
           matchRowDiv.appendChild(homeAwayColumnDiv);
 
           // homeDiv element
           const homeDiv = document.createElement("div");
-          homeDiv.classList.add("flex", "gap-4", "px-2");
+          homeDiv.classList.add("flex", "gap-2");
           const homeLogoDiv = document.createElement("div");
           homeLogoDiv.classList.add("flex", "items-center");
           const homeLogoImg = document.createElement("img");
@@ -288,14 +277,14 @@ TODO: update team logos
           homeNameDiv.textContent = `${match.homeTeam}`;
           homeDiv.appendChild(homeNameDiv);
           const homeFormDiv = document.createElement("div");
-          homeFormDiv.classList.add("ml-auto");
+          homeFormDiv.classList.add("hidden", "sm:block", "ml-auto", "pr-2");
           homeFormDiv.textContent = `${match.homeTeamForm}`;
           homeDiv.appendChild(homeFormDiv);
           homeAwayColumnDiv.appendChild(homeDiv);
 
           // awayDiv element
           const awayDiv = document.createElement("div");
-          awayDiv.classList.add("flex", "gap-4", "px-2");
+          awayDiv.classList.add("flex", "gap-2");
           const awayLogoDiv = document.createElement("div");
           awayLogoDiv.classList.add("flex", "items-center");
           const awayLogoImg = document.createElement("img");
@@ -308,7 +297,7 @@ TODO: update team logos
           awayNameDiv.textContent = `${match.awayTeam}`;
           awayDiv.appendChild(awayNameDiv);
           const awayFormDiv = document.createElement("div");
-          awayFormDiv.classList.add("ml-auto");
+          awayFormDiv.classList.add("hidden", "sm:block", "ml-auto", "pr-2");
           awayFormDiv.textContent = `${match.awayTeamForm}`;
           awayDiv.appendChild(awayFormDiv);
           homeAwayColumnDiv.appendChild(awayDiv);
@@ -319,7 +308,6 @@ TODO: update team logos
             "flex",
             "w-40",
             "flex-col",
-            "px-2",
             "text-center",
           );
           matchRowDiv.appendChild(winnerRecordColumnDiv);
@@ -336,7 +324,13 @@ TODO: update team logos
 
           // oddsColumnDiv element
           const oddsColumnDiv = document.createElement("div");
-          oddsColumnDiv.classList.add("block", "w-12", "pr-1", "text-right");
+          oddsColumnDiv.classList.add(
+            "hidden",
+            "sm:block",
+            "w-12",
+            "pr-1",
+            "text-right",
+          );
           oddsColumnDiv.textContent = `${match.odds}`;
           matchRowDiv.appendChild(oddsColumnDiv);
         }
