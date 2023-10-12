@@ -1,14 +1,14 @@
-# Name
+# Winner's Table
 
-Description
+Fetches data from ESPN's hidden API endpoints for all current & next day's soccer matches & returns & displays a select list of projected winners based on certain criteria
 
-![screenshot](src/assets/screenshot.png)
+![screenshot](screenshot.png)
 
 **Link to project:**
 
 ## 🚀 How It's Made:
 
-**Tech used:** [Astro](https://astro.build/), HTML, [Tailwind CSS](https://tailwindcss.com/), JavaScript, React
+**Tech used:** [Astro](https://astro.build/), HTML, [Tailwind CSS](https://tailwindcss.com/), JavaScript
 
 ## 🧞 Commands
 
