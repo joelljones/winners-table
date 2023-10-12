@@ -1,8 +1,8 @@
-<!--
-TODO: get team logos & update mobile view
-TODO: update styling
+---
+// TODO: update styling
+// TODO: show team logos & update mobile view
+---
 
--->
 <script>
   // TODAY
   //  get & format today's date
@@ -103,7 +103,10 @@ TODO: update styling
         // const eventName = event.name;
 
         // HOME TEAM
-        const homeTeamLogo = event.competitions[0].competitors[0].team.logo;
+        let homeTeamLogo = "";
+        if (event.competitions[0].competitors[0].team.logo !== undefined) {
+          homeTeamLogo = event.competitions[0].competitors[0].team.logo;
+        }
         const homeTeam = event.competitions[0].competitors[0].team.name;
         let homeTeamForm = "";
         if (event.competitions[0].competitors[0].form !== undefined) {
@@ -114,7 +117,10 @@ TODO: update styling
         ).length;
 
         // AWAY TEAM
-        const awayTeamLogo = event.competitions[0].competitors[1].team.logo;
+        let awayTeamLogo = "";
+        if (event.competitions[0].competitors[1].team.logo !== undefined) {
+          awayTeamLogo = event.competitions[0].competitors[1].team.logo;
+        }
         const awayTeam = event.competitions[0].competitors[1].team.name;
         let awayTeamForm = "";
         if (event.competitions[0].competitors[1].form) {
@@ -195,7 +201,7 @@ TODO: update styling
 
       // h2 element
       const h2 = document.createElement("h2");
-      h2.classList.add("pb-4", "pl-1", "text-xl");
+      h2.classList.add("pb-4", "pl-2", "text-xl");
       h2.textContent = date === todaysDate ? "TODAY" : "TOMORROW";
 
       // cardDiv element
@@ -264,40 +270,42 @@ TODO: update styling
 
           // homeDiv element
           const homeDiv = document.createElement("div");
-          homeDiv.classList.add("flex", "gap-2");
+          homeDiv.classList.add("flex", "gap-1", "px-1");
           const homeLogoDiv = document.createElement("div");
           homeLogoDiv.classList.add("flex", "items-center");
           const homeLogoImg = document.createElement("img");
-          // homeLogoImg.src = match.homeTeamLogo; // assuming match.homeTeamLogo contains the URL of the image
-          // homeLogoImg.alt = "Logo"; // Add an alt attribute for accessibility
+          homeLogoImg.classList.add("h-6", "object-contain");
+          homeLogoImg.src = match.homeTeamLogo;
+          homeLogoImg.alt = "Logo";
           homeLogoDiv.appendChild(homeLogoImg);
-          homeDiv.appendChild(homeLogoDiv);
+          // homeDiv.appendChild(homeLogoDiv);
           const homeNameDiv = document.createElement("div");
           homeNameDiv.classList.add("w-36");
           homeNameDiv.textContent = `${match.homeTeam}`;
           homeDiv.appendChild(homeNameDiv);
           const homeFormDiv = document.createElement("div");
-          homeFormDiv.classList.add("hidden", "sm:block", "ml-auto", "pr-2");
+          homeFormDiv.classList.add("hidden", "sm:block", "ml-auto");
           homeFormDiv.textContent = `${match.homeTeamForm}`;
           homeDiv.appendChild(homeFormDiv);
           homeAwayColumnDiv.appendChild(homeDiv);
 
           // awayDiv element
           const awayDiv = document.createElement("div");
-          awayDiv.classList.add("flex", "gap-2");
+          awayDiv.classList.add("flex", "gap-1", "px-1");
           const awayLogoDiv = document.createElement("div");
           awayLogoDiv.classList.add("flex", "items-center");
           const awayLogoImg = document.createElement("img");
-          // awayLogoImg.src = match.awayTeamLogo; // assuming match.awayTeamLogo contains the URL of the image
-          // awayLogoImg.alt = "Logo"; // Add an alt attribute for accessibility
+          awayLogoImg.classList.add("h-6", "object-contain");
+          awayLogoImg.src = match.awayTeamLogo;
+          awayLogoImg.alt = "Logo";
           awayLogoDiv.appendChild(awayLogoImg);
-          awayDiv.appendChild(awayLogoDiv);
+          // awayDiv.appendChild(awayLogoDiv);
           const awayNameDiv = document.createElement("div");
           awayNameDiv.classList.add("w-36");
           awayNameDiv.textContent = `${match.awayTeam}`;
           awayDiv.appendChild(awayNameDiv);
           const awayFormDiv = document.createElement("div");
-          awayFormDiv.classList.add("hidden", "sm:block", "ml-auto", "pr-2");
+          awayFormDiv.classList.add("hidden", "sm:block", "ml-auto");
           awayFormDiv.textContent = `${match.awayTeamForm}`;
           awayDiv.appendChild(awayFormDiv);
           homeAwayColumnDiv.appendChild(awayDiv);
@@ -374,37 +382,37 @@ TODO: update styling
       // // console.table
       // console.table(tableToPrint);
 
-      // TABLE BY LEAGUE TO BE PRINTED TO CONSOLE
-      for (const league in matchesByLeague) {
-        const tablebyLeagueToPrint = matchesByLeague[league].map(
-          ({
-            leagueName,
-            formattedTime,
-            homeTeamForm,
-            homeTeam,
-            awayTeam,
-            awayTeamForm,
-            winner,
-            record,
-            odds,
-          }) => {
-            return {
-              leagueName,
-              formattedTime,
-              homeTeamForm,
-              homeTeam,
-              awayTeam,
-              awayTeamForm,
-              winner,
-              record,
-              odds,
-            };
-          },
-        );
+      // // TABLE BY LEAGUE TO BE PRINTED TO CONSOLE
+      // for (const league in matchesByLeague) {
+      //   const tablebyLeagueToPrint = matchesByLeague[league].map(
+      //     ({
+      //       leagueName,
+      //       formattedTime,
+      //       homeTeamForm,
+      //       homeTeam,
+      //       awayTeam,
+      //       awayTeamForm,
+      //       winner,
+      //       record,
+      //       odds,
+      //     }) => {
+      //       return {
+      //         leagueName,
+      //         formattedTime,
+      //         homeTeamForm,
+      //         homeTeam,
+      //         awayTeam,
+      //         awayTeamForm,
+      //         winner,
+      //         record,
+      //         odds,
+      //       };
+      //     },
+      //   );
 
-        // console.table
-        console.table(tablebyLeagueToPrint);
-      }
+      //   // console.table
+      //   console.table(tablebyLeagueToPrint);
+      // }
     } catch (err) {
       console.log(`error ${err}`);
     }
