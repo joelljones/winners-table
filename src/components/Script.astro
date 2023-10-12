@@ -382,37 +382,37 @@
       // // console.table
       // console.table(tableToPrint);
 
-      // // TABLE BY LEAGUE TO BE PRINTED TO CONSOLE
-      // for (const league in matchesByLeague) {
-      //   const tablebyLeagueToPrint = matchesByLeague[league].map(
-      //     ({
-      //       leagueName,
-      //       formattedTime,
-      //       homeTeamForm,
-      //       homeTeam,
-      //       awayTeam,
-      //       awayTeamForm,
-      //       winner,
-      //       record,
-      //       odds,
-      //     }) => {
-      //       return {
-      //         leagueName,
-      //         formattedTime,
-      //         homeTeamForm,
-      //         homeTeam,
-      //         awayTeam,
-      //         awayTeamForm,
-      //         winner,
-      //         record,
-      //         odds,
-      //       };
-      //     },
-      //   );
+      // TABLE BY LEAGUE TO BE PRINTED TO CONSOLE
+      for (const league in matchesByLeague) {
+        const tablebyLeagueToPrint = matchesByLeague[league].map(
+          ({
+            leagueName,
+            formattedTime,
+            homeTeamForm,
+            homeTeam,
+            awayTeam,
+            awayTeamForm,
+            winner,
+            record,
+            odds,
+          }) => {
+            return {
+              leagueName,
+              formattedTime,
+              homeTeamForm,
+              homeTeam,
+              awayTeam,
+              awayTeamForm,
+              winner,
+              record,
+              odds,
+            };
+          },
+        );
 
-      //   // console.table
-      //   console.table(tablebyLeagueToPrint);
-      // }
+        // console.table
+        console.table(tablebyLeagueToPrint);
+      }
     } catch (err) {
       console.log(`error ${err}`);
     }
