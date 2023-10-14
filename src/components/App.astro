@@ -254,7 +254,15 @@
         for (const match of matchesByLeague[league]) {
           // create matchRowDiv element
           const matchRowDiv = document.createElement("div");
-          matchRowDiv.classList.add("flex", "items-center", "divide-x", "h-16");
+          matchRowDiv.classList.add(
+            "flex",
+            "items-center",
+            "divide-x",
+            "h-20",
+            "mb-2",
+            "lg:h-16",
+            "lg:mb-0",
+          );
           leagueTableDiv.appendChild(matchRowDiv);
 
           // timeColumnDiv element
@@ -265,7 +273,7 @@
 
           // homeAwayColumnDiv element
           const homeAwayColumnDiv = document.createElement("div");
-          homeAwayColumnDiv.classList.add("flex", "flex-col", "sm:w-60");
+          homeAwayColumnDiv.classList.add("flex", "flex-col", "lg:w-96");
           matchRowDiv.appendChild(homeAwayColumnDiv);
 
           // homeDiv element
@@ -280,11 +288,11 @@
           homeLogoDiv.appendChild(homeLogoImg);
           // homeDiv.appendChild(homeLogoDiv);
           const homeNameDiv = document.createElement("div");
-          homeNameDiv.classList.add("w-36");
+          homeNameDiv.classList.add("w-36", "lg:w-64");
           homeNameDiv.textContent = `${match.homeTeam}`;
           homeDiv.appendChild(homeNameDiv);
           const homeFormDiv = document.createElement("div");
-          homeFormDiv.classList.add("hidden", "sm:block", "ml-auto");
+          homeFormDiv.classList.add("hidden", "lg:block", "ml-auto");
           homeFormDiv.textContent = `${match.homeTeamForm}`;
           homeDiv.appendChild(homeFormDiv);
           homeAwayColumnDiv.appendChild(homeDiv);
@@ -301,11 +309,11 @@
           awayLogoDiv.appendChild(awayLogoImg);
           // awayDiv.appendChild(awayLogoDiv);
           const awayNameDiv = document.createElement("div");
-          awayNameDiv.classList.add("w-36");
+          awayNameDiv.classList.add("w-36", "lg:w-64");
           awayNameDiv.textContent = `${match.awayTeam}`;
           awayDiv.appendChild(awayNameDiv);
           const awayFormDiv = document.createElement("div");
-          awayFormDiv.classList.add("hidden", "sm:block", "ml-auto");
+          awayFormDiv.classList.add("hidden", "lg:block", "ml-auto");
           awayFormDiv.textContent = `${match.awayTeamForm}`;
           awayDiv.appendChild(awayFormDiv);
           homeAwayColumnDiv.appendChild(awayDiv);
@@ -315,6 +323,7 @@
           winnerRecordColumnDiv.classList.add(
             "flex",
             "w-40",
+            "lg:w-64",
             "flex-col",
             "text-center",
           );
@@ -334,7 +343,7 @@
           const oddsColumnDiv = document.createElement("div");
           oddsColumnDiv.classList.add(
             "hidden",
-            "sm:block",
+            "lg:block",
             "w-12",
             "pr-1",
             "text-right",
