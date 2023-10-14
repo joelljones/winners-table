@@ -39,6 +39,12 @@
       );
       const data = await res.json();
 
+      // PROJECTED WINNERS ARRAY
+      // create an array to store matches grouped by league
+      const matchesByLeague = [];
+      // create an array to store matches
+      const winnersTable = [];
+
       // MATCH OBJECT CONSTRUCTOR
       function Match(
         league,
@@ -72,12 +78,6 @@
         this.odds = odds;
       }
 
-      // PROJECTED WINNERS ARRAY
-      // create an array to store matches
-      const winnersTable = [];
-      // create an array to store matches grouped by league
-      const matchesByLeague = [];
-
       // loop through events
       for (const event of data.events) {
         // LEAGUE
@@ -88,6 +88,10 @@
           "2023-ncaa-division-i-women",
           "2023-24-russian-premier-league",
         ];
+
+        // EVENT STATUS
+        let postponed =
+          event.competitions[0].status.type.description === "Postponed";
 
         // TIME
         const matchTime = event.date;
@@ -181,16 +185,17 @@
           `${odds}`,
         );
 
-        // if league is not excluded & there is a winner
-        if (!excludedLeagues.includes(leagueName) && winner) {
+        // ADD TO matchesByLeague & winnersTable ARRAYS
+        // if league is not excluded, & match is not postponed, & there is a winner
+        if (!excludedLeagues.includes(leagueName) && !postponed && winner) {
           // if league does not already exist in matchesByLeague array, create array for league
           if (!matchesByLeague[league]) {
             matchesByLeague[league] = [];
           }
-          // push the match to winneraTable array
-          winnersTable.push(matchObject);
           // push the match object to its respective league array
           matchesByLeague[league].push(matchObject);
+          // push the match to winnersTable array
+          winnersTable.push(matchObject);
         }
       }
 
