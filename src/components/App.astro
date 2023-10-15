@@ -263,7 +263,7 @@
             "flex",
             "items-center",
             "divide-x",
-            "h-20",
+            "h-24",
             "mb-2",
             "lg:h-16",
             "lg:mb-0",
@@ -293,7 +293,7 @@
           homeLogoDiv.appendChild(homeLogoImg);
           // homeDiv.appendChild(homeLogoDiv);
           const homeNameDiv = document.createElement("div");
-          homeNameDiv.classList.add("w-36", "lg:w-64");
+          homeNameDiv.classList.add("w-36", "lg:w-72");
           homeNameDiv.textContent = `${match.homeTeam}`;
           homeDiv.appendChild(homeNameDiv);
           const homeFormDiv = document.createElement("div");
@@ -314,7 +314,7 @@
           awayLogoDiv.appendChild(awayLogoImg);
           // awayDiv.appendChild(awayLogoDiv);
           const awayNameDiv = document.createElement("div");
-          awayNameDiv.classList.add("w-36", "lg:w-64");
+          awayNameDiv.classList.add("w-36", "lg:w-72");
           awayNameDiv.textContent = `${match.awayTeam}`;
           awayDiv.appendChild(awayNameDiv);
           const awayFormDiv = document.createElement("div");
@@ -328,9 +328,10 @@
           winnerRecordColumnDiv.classList.add(
             "flex",
             "w-40",
-            "lg:w-64",
+            "lg:w-72",
             "flex-col",
             "text-center",
+            "px-1",
           );
           matchRowDiv.appendChild(winnerRecordColumnDiv);
 
@@ -350,6 +351,7 @@
             "hidden",
             "lg:block",
             "w-12",
+            "lg:w-16",
             "pr-1",
             "text-right",
           );
