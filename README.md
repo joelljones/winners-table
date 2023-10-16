@@ -4,7 +4,7 @@ Fetches data from ESPN's hidden API endpoints for all current & next day's socce
 
 ![screenshot](screenshot.png)
 
-**Link to project:**
+**Link to project:** https://winners-table.netlify.app
 
 ## 🚀 How It's Made:
 
