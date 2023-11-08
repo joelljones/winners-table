@@ -92,6 +92,8 @@
         // EVENT STATUS
         let postponed =
           event.competitions[0].status.type.description === "Postponed";
+        let canceled =
+          event.competitions[0].status.type.description === "Canceled";
 
         // TIME
         const matchTime = event.date;
@@ -187,7 +189,12 @@
 
         // ADD TO matchesByLeague & winnersTable ARRAYS
         // if league is not excluded, & match is not postponed, & there is a winner
-        if (!excludedLeagues.includes(leagueName) && !postponed && winner) {
+        if (
+          !excludedLeagues.includes(leagueName) &&
+          !postponed &&
+          !canceled &&
+          winner
+        ) {
           // if league does not already exist in matchesByLeague array, create array for league
           if (!matchesByLeague[league]) {
             matchesByLeague[league] = [];
