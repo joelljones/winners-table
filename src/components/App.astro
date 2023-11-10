@@ -49,6 +49,7 @@
       function Match(
         league,
         leagueName,
+        leagueType,
         formattedTime,
         homeTeamLogo,
         homeTeam,
@@ -64,6 +65,7 @@
       ) {
         this.league = league;
         this.leagueName = leagueName;
+        this.leagueType = leagueType;
         this.formattedTime = formattedTime;
         this.homeTeamLogo = homeTeamLogo;
         this.homeTeam = homeTeam;
@@ -83,9 +85,11 @@
         // LEAGUE
         const league = event.season.type;
         const leagueName = event.season.slug;
+        const leagueType = event.season.type;
         const excludedLeagues = [
           "2023-ncaa-division-i-men",
           "2023-ncaa-division-i-women",
+          11788, // "2023-ncaa-division-i-women" first-round playoffs
           "2023-24-russian-premier-league",
           "2023-24-ugandan-premier-league",
         ];
@@ -174,6 +178,7 @@
         const matchObject = new Match(
           `${league}`,
           `${leagueName}`,
+          `${leagueType}`,
           `${formattedTime}`,
           `${homeTeamLogo}`,
           `${homeTeam}`,
@@ -192,6 +197,7 @@
         // if league is not excluded, & match is not postponed, & there is a winner
         if (
           !excludedLeagues.includes(leagueName) &&
+          !excludedLeagues.includes(leagueType) &&
           !postponed &&
           !canceled &&
           winner
