@@ -300,27 +300,6 @@
           homeAwayColumnDiv.classList.add("flex", "flex-col", "lg:w-96");
           matchRowDiv.appendChild(homeAwayColumnDiv);
 
-          // homeDiv element
-          const homeDiv = document.createElement("div");
-          homeDiv.classList.add("flex", "gap-1", "px-1");
-          const homeLogoDiv = document.createElement("div");
-          homeLogoDiv.classList.add("flex", "items-center");
-          const homeLogoImg = document.createElement("img");
-          homeLogoImg.classList.add("h-6", "object-contain");
-          homeLogoImg.src = match.homeTeamLogo;
-          homeLogoImg.alt = "Logo";
-          homeLogoDiv.appendChild(homeLogoImg);
-          // homeDiv.appendChild(homeLogoDiv);
-          const homeNameDiv = document.createElement("div");
-          homeNameDiv.classList.add("w-36", "lg:w-72");
-          homeNameDiv.textContent = `${match.homeTeam}`;
-          homeDiv.appendChild(homeNameDiv);
-          const homeFormDiv = document.createElement("div");
-          homeFormDiv.classList.add("hidden", "lg:block", "ml-auto");
-          homeFormDiv.textContent = `${match.homeTeamForm}`;
-          homeDiv.appendChild(homeFormDiv);
-          homeAwayColumnDiv.appendChild(homeDiv);
-
           // awayDiv element
           const awayDiv = document.createElement("div");
           awayDiv.classList.add("flex", "gap-1", "px-1");
@@ -341,6 +320,27 @@
           awayFormDiv.textContent = `${match.awayTeamForm}`;
           awayDiv.appendChild(awayFormDiv);
           homeAwayColumnDiv.appendChild(awayDiv);
+
+          // homeDiv element
+          const homeDiv = document.createElement("div");
+          homeDiv.classList.add("flex", "gap-1", "px-1");
+          const homeLogoDiv = document.createElement("div");
+          homeLogoDiv.classList.add("flex", "items-center");
+          const homeLogoImg = document.createElement("img");
+          homeLogoImg.classList.add("h-6", "object-contain");
+          homeLogoImg.src = match.homeTeamLogo;
+          homeLogoImg.alt = "Logo";
+          homeLogoDiv.appendChild(homeLogoImg);
+          // homeDiv.appendChild(homeLogoDiv);
+          const homeNameDiv = document.createElement("div");
+          homeNameDiv.classList.add("w-36", "lg:w-72");
+          homeNameDiv.textContent = `${match.homeTeam}`;
+          homeDiv.appendChild(homeNameDiv);
+          const homeFormDiv = document.createElement("div");
+          homeFormDiv.classList.add("hidden", "lg:block", "ml-auto");
+          homeFormDiv.textContent = `${match.homeTeamForm}`;
+          homeDiv.appendChild(homeFormDiv);
+          homeAwayColumnDiv.appendChild(homeDiv);
 
           // winnerRecordColumnDiv element
           const winnerRecordColumnDiv = document.createElement("div");
