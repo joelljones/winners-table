@@ -317,7 +317,7 @@
           homeNameDiv.textContent = `${match.homeTeam}`;
           homeDiv.appendChild(homeNameDiv);
           const homeFormDiv = document.createElement("div");
-          homeFormDiv.classList.add("hidden", "lg:block", "ml-auto");
+          homeFormDiv.classList.add("hidden", "md:block", "ml-auto");
           homeFormDiv.textContent = `${match.homeTeamForm}`;
           homeDiv.appendChild(homeFormDiv);
           homeAwayColumnDiv.appendChild(homeDiv);
@@ -338,7 +338,7 @@
           awayNameDiv.textContent = `${match.awayTeam}`;
           awayDiv.appendChild(awayNameDiv);
           const awayFormDiv = document.createElement("div");
-          awayFormDiv.classList.add("hidden", "lg:block", "ml-auto");
+          awayFormDiv.classList.add("hidden", "md:block", "ml-auto");
           awayFormDiv.textContent = `${match.awayTeamForm}`;
           awayDiv.appendChild(awayFormDiv);
           homeAwayColumnDiv.appendChild(awayDiv);
@@ -369,7 +369,7 @@
           const oddsColumnDiv = document.createElement("div");
           oddsColumnDiv.classList.add(
             "hidden",
-            "lg:block",
+            "md:block",
             "w-12",
             "lg:w-16",
             "pr-1",
