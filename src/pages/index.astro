@@ -1,8 +1,10 @@
 ---
-import App from "../components/App.astro";
-import Layout from "../layouts/Layout.astro";
+export const prerender = false
+
+import App from '../components/App.astro'
+import Layout from '../layouts/Layout.astro'
 ---
 
 <Layout title="Winner's Table">
-  <App />
+	<App />
 </Layout>

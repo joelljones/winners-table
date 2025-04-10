@@ -1,461 +1,332 @@
 ---
-// TODO: update styling
-// TODO: show team logos & update mobile view
+// --- Constants ---
+const API_BASE_URL =
+	'https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates='
+// Use Set for efficient lookups
+const EXCLUDED_LEAGUES = new Set([
+	'2023-ncaa-division-i-men',
+	'2024-ncaa-division-i-men',
+	'2025-ncaa-division-i-men',
+	11839, // NCAA Division I Men first-round playoffs
+	11840, // NCAA Division I Men second-round playoffs
+	'2023-ncaa-division-i-women',
+	'2024-ncaa-division-i-women',
+	'2025-ncaa-division-i-women',
+	11788, // NCAA Division I Women first-round playoffs
+	11789, // NCAA Division I Women second-round playoffs
+	11790, // NCAA Division I Women third-round playoffs
+	11791, // NCAA Division I Women quarterfinals
+	'2023-24-russian-premier-league',
+	'2024-25-russian-premier-league',
+	'2023-24-ugandan-premier-league',
+	'2024-25-ugandan-premier-league',
+	'2023-malaysian-super-league',
+	'2024-malaysian-super-league',
+	'2025-malaysian-super-league',
+])
+
+// --- Helper Functions ---
+function formatDateForAPI(date) {
+	const year = date.getFullYear()
+	const month = (date.getMonth() + 1).toString().padStart(2, '0')
+	const day = date.getDate().toString().padStart(2, '0')
+	return `${year}${month}${day}`
+}
+
+function formatTimeForDisplay(dateString) {
+	try {
+		const utcTime = new Date(dateString)
+		return utcTime.toLocaleString('en-US', {
+			hour12: true,
+			hour: 'numeric',
+			minute: '2-digit',
+		})
+	} catch (e) {
+		console.error('Error formatting time:', dateString, e)
+		return 'Invalid Time'
+	}
+}
+
+function calculateWinnerType(homeWins, awayWins) {
+	if (
+		(homeWins >= 3 && awayWins <= 2 && homeWins - awayWins >= 3) ||
+		(homeWins === 5 && awayWins <= 3)
+	) {
+		return 'home'
+	}
+	if (
+		(awayWins >= 3 && homeWins <= 2 && awayWins - homeWins >= 3) ||
+		(awayWins === 5 && homeWins <= 3)
+	) {
+		return 'away'
+	}
+	return null
+}
+
+function processEventData(event) {
+	const competition = event.competitions[0]
+	const homeCompetitor = competition.competitors[0]
+	const awayCompetitor = competition.competitors[1]
+
+	const homeTeamForm = homeCompetitor.form || ''
+	const awayTeamForm = awayCompetitor.form || ''
+	const homeTeamWins = [...homeTeamForm].filter(
+		(c) => c.toLowerCase() === 'w'
+	).length
+	const awayTeamWins = [...awayTeamForm].filter(
+		(c) => c.toLowerCase() === 'w'
+	).length
+
+	const winnerType = calculateWinnerType(homeTeamWins, awayTeamWins)
+	const winnerName =
+		winnerType === 'home'
+			? homeCompetitor.team.name
+			: winnerType === 'away'
+			? awayCompetitor.team.name
+			: ''
+
+	const homeTeamWinsStr = String(homeTeamWins)
+	const awayTeamWinsStr = String(awayTeamWins)
+
+	return {
+		league: event.season.type,
+		leagueName: event.season.slug,
+		leagueType: event.season.type,
+		formattedTime: formatTimeForDisplay(event.date),
+		homeTeamLogo: homeCompetitor.team.logo || '',
+		homeTeam: homeCompetitor.team.name,
+		homeTeamForm: homeTeamForm,
+		homeTeamWins: homeTeamWinsStr,
+		awayTeamLogo: awayCompetitor.team.logo || '',
+		awayTeam: awayCompetitor.team.name,
+		awayTeamForm: awayTeamForm,
+		awayTeamWins: awayTeamWinsStr,
+		winner: winnerName,
+		record: `${homeTeamWins}-${awayTeamWins}`,
+		odds: competition.odds?.[0]?.details || '',
+		isPostponed: competition.status.type.description === 'Postponed',
+		isCanceled: competition.status.type.description === 'Canceled',
+	}
+}
+
+function filterMatch(match) {
+	return (
+		!EXCLUDED_LEAGUES.has(match.leagueName) &&
+		!EXCLUDED_LEAGUES.has(match.leagueType) &&
+		!match.isPostponed &&
+		!match.isCanceled &&
+		!!match.winner
+	)
+}
+
+function formatLeagueName(slug) {
+	return slug
+		.replace(/-/g, ' ')
+		.replace(/league/i, '')
+		.replace(/^[0-9-]+/, '') // Remove leading year/numbers if present
+		.trim()
+		.split(' ')
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ')
+}
+
+// This function builds and returns an HTML string
+function renderLeagueHTML(matches) {
+	// Ensure matches is an array and has at least one item
+	if (!Array.isArray(matches) || matches.length === 0) {
+		return '' // Return empty string if no matches
+	}
+
+	const leagueName = formatLeagueName(matches[0].leagueName)
+
+	// Use .map().join('') to create the list of match rows HTML
+	const matchesHTML = matches
+		.map((match, index) => {
+			// Determine conditional class string
+			const conditionalClass = index > 0 ? 'pt-2' : ''
+			// Generate logo HTML conditionally
+			const homeLogoHTML = match.homeTeamLogo
+				? `<img src="${match.homeTeamLogo}" alt="${match.homeTeam} logo" class="mr-1 h-5 w-5 object-contain sm:inline-block"/>`
+				: ''
+			const awayLogoHTML = match.awayTeamLogo
+				? `<img src="${match.awayTeamLogo}" alt="${match.awayTeam} logo" class="mr-1 h-5 w-5 object-contain sm:inline-block"/>`
+				: ''
+			const winnerDisplay = match.winner || '-' // Handle empty winner
+
+			// Return the HTML string for a single match row
+			return `
+      <div class="flex items-center border-b border-dotted border-zinc-700 py-3 text-zinc-400 ${conditionalClass}">
+
+        <div class="w-20 flex-shrink-0 border-r pr-2 text-center text-sm md:text-base border-zinc-400">${match.formattedTime}</div>
+
+        <div class="flex min-w-0 grow flex-col space-y-1 px-2">
+          <div class="flex items-center gap-1 text-sm md:text-base">
+            ${homeLogoHTML}
+            <span class="flex-grow truncate font-medium text-white">${match.homeTeam}</span>
+            <span class="ml-auto hidden flex-shrink-0 p-2 text-xs text-zinc-500 md:inline-block">${match.homeTeamForm}</span>
+          </div>
+
+          <div class="flex items-center gap-1 text-sm md:text-base">
+            ${awayLogoHTML}
+            <span class="flex-grow truncate text-white">${match.awayTeam}</span>
+            <span class="ml-auto hidden flex-shrink-0 p-2 text-xs text-zinc-500 md:inline-block">${match.awayTeamForm}</span>
+          </div>
+        </div>
+
+        <div class="flex w-32 min-w-0 flex-shrink-0 flex-col justify-center px-1 text-center md:w-40 lg:w-48">
+          <div class="truncate bg-gradient-to-r from-red-600 to-fuchsia-500 bg-clip-text text-sm font-semibold text-transparent md:text-base">${winnerDisplay}</div>
+          <div class="text-xs text-zinc-500 md:text-sm">(${match.record})</div>
+        </div>
+
+        <div class="hidden w-12 flex-shrink-0 items-center justify-end border-l pl-1 text-right text-xs md:flex lg:w-16 border-zinc-400">
+          ${match.odds}
+        </div>
+      </div>
+    `
+		})
+		.join('') // Join the array of match row strings into one big string
+
+	// Return the complete HTML block for the league
+	return `
+    <div class="rounded-2xl bg-zinc-800 p-4">
+      <div class="flex items-center border-b border-dotted border-zinc-700 pb-3">
+        <h3 class="text-white">
+          ${leagueName}
+        </h3>
+      </div>
+
+      <div class="space-y-2">
+        ${matchesHTML}
+      </div>
+    </div>
+  `
+}
+
+// --- Core Fetching and Processing Function ---
+async function getProcessedMatches(apiDate) {
+	console.log(`Server: Fetching data for ${apiDate}...`) // Server-side log
+	try {
+		const response = await fetch(`${API_BASE_URL}${apiDate}`)
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status} for ${apiDate}`)
+		}
+		const data = await response.json()
+
+		if (!data.events || data.events.length === 0) {
+			console.log(`Server: No events found in API response for ${apiDate}.`)
+			return {} // Return empty if no events
+		}
+
+		const allMatches = data.events.map(processEventData)
+		const filteredMatches = allMatches.filter(filterMatch)
+
+		if (filteredMatches.length === 0) {
+			console.log(
+				`Server: No qualifying matches found after filtering for ${apiDate}.`
+			)
+			return {} // Return empty if no filtered matches
+		}
+
+		// Group by league using the 'league' property (season.type)
+		const matchesByLeague = filteredMatches.reduce((acc, match) => {
+			const key = String(match.league) // Ensure key is string
+			if (!acc[key]) {
+				acc[key] = []
+			}
+			acc[key].push(match)
+			return acc
+		}, {})
+
+		// Sort leagues by name for consistent display order
+		const sortedKeys = Object.keys(matchesByLeague).sort((a, b) => {
+			const nameA = matchesByLeague[a][0]?.leagueName || ''
+			const nameB = matchesByLeague[b][0]?.leagueName || ''
+			return nameA.localeCompare(nameB)
+		})
+
+		const sortedMatchesByLeague = {}
+		for (const key of sortedKeys) {
+			sortedMatchesByLeague[key] = matchesByLeague[key]
+		}
+		console.log(`Server: Successfully processed matches for ${apiDate}.`)
+		return sortedMatchesByLeague
+	} catch (error) {
+		console.error(
+			`Server: Error fetching/processing data for ${apiDate}:`,
+			error
+		)
+		return {} // Return empty object on error to prevent breaking render
+	}
+}
+
+// --- Fetch Data for Today and Tomorrow ---
+// Note: Top-level await is available in Astro frontmatter
+const today = new Date() // Use server's current date
+const tomorrow = new Date()
+tomorrow.setDate(today.getDate() + 1)
+
+const todaysDateAPI = formatDateForAPI(today)
+const tomorrowsDateAPI = formatDateForAPI(tomorrow)
+
+// Fetch in parallel for efficiency
+const [todayMatchesGrouped, tomorrowMatchesGrouped] = await Promise.all([
+	getProcessedMatches(todaysDateAPI),
+	getProcessedMatches(tomorrowsDateAPI),
+])
+
+// Check if we have matches to display for each day
+const hasTodayMatches = Object.keys(todayMatchesGrouped).length > 0
+const hasTomorrowMatches = Object.keys(tomorrowMatchesGrouped).length > 0
 ---
 
-<script>
-  // TODAY
-  //  get & format today's date
-  function getTodaysDate() {
-    const today = new Date();
+{/* 🖼️ Render component */}
+<main id='main' class='grid justify-center gap-8 py-8'>
+	{/* 📅 Today's matches */}
+	<section aria-labelledby='today-heading'>
+		<h2 id='today-heading' class='pb-4 pl-2 text-xl font-semibold text-white'>
+			TODAY
+		</h2>
+		{
+			hasTodayMatches ? (
+				<div class='flex flex-col gap-2'>
+					{/* 🔄 Loop through leagues and render the HTML string for each */}
+					{Object.entries(todayMatchesGrouped).map(([leagueKey, matches]) => (
+						<Fragment set:html={renderLeagueHTML(matches)} />
+						/* The key prop doesn't apply directly here like with components,
+             the distinction happens via the loop itself */
+					))}
+				</div>
+			) : (
+				<div class='rounded-lg border bg-zinc-800 p-4 text-center text-zinc-400'>
+					No qualifying matches found for today.
+				</div>
+			)
+		}
+	</section>
 
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, "0");
-    const day = today.getDate().toString().padStart(2, "0");
-
-    return `${year}${month}${day}`;
-  }
-  const todaysDate = getTodaysDate();
-
-  // TOMORROW
-  //  get & format tomorrow's date
-  function getTomorrowsDate() {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const year = tomorrow.getFullYear();
-    const month = (tomorrow.getMonth() + 1).toString().padStart(2, "0");
-    const day = tomorrow.getDate().toString().padStart(2, "0");
-
-    return `${year}${month}${day}`;
-  }
-  const tomorrowsDate = getTomorrowsDate();
-
-  // FETCH
-  async function getFetch(date) {
-    try {
-      const res = await fetch(
-        `https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${date}`,
-      );
-      const data = await res.json();
-
-      // PROJECTED WINNERS ARRAY
-      // create an array to store matches grouped by league
-      const matchesByLeague = [];
-      // create an array to store matches
-      const winnersTable = [];
-
-      // MATCH OBJECT CONSTRUCTOR
-      function Match(
-        league,
-        leagueName,
-        leagueType,
-        formattedTime,
-        homeTeamLogo,
-        homeTeam,
-        homeTeamForm,
-        homeTeamWins,
-        awayTeamLogo,
-        awayTeam,
-        awayTeamForm,
-        awayTeamWins,
-        winner,
-        record,
-        odds,
-      ) {
-        this.league = league;
-        this.leagueName = leagueName;
-        this.leagueType = leagueType;
-        this.formattedTime = formattedTime;
-        this.homeTeamLogo = homeTeamLogo;
-        this.homeTeam = homeTeam;
-        this.homeTeamForm = homeTeamForm;
-        this.homeTeamWins = homeTeamWins;
-        this.awayTeamLogo = awayTeamLogo;
-        this.awayTeam = awayTeam;
-        this.awayTeamForm = awayTeamForm;
-        this.awayTeamWins = awayTeamWins;
-        this.winner = winner;
-        this.record = record;
-        this.odds = odds;
-      }
-
-      // loop through events
-      for (const event of data.events) {
-        // LEAGUE
-        const league = event.season.type;
-        const leagueName = event.season.slug;
-        const leagueType = event.season.type;
-        const excludedLeagues = [
-          "2023-ncaa-division-i-men",
-          11839, // "2023-ncaa-division-i-men" first-round playoffs
-          11840, // "2023-ncaa-division-i-men" second-round playoffs
-          "2023-ncaa-division-i-women",
-          11788, // "2023-ncaa-division-i-women" first-round playoffs
-          11789, // "2023-ncaa-division-i-women" second-round playoffs
-          11790, // "2023-ncaa-division-i-women" third-round playoffs
-          11791, // "2023-ncaa-division-i-women" quarterfinals
-          "2023-24-russian-premier-league",
-          "2023-24-ugandan-premier-league",
-          "2023-malaysian-super-league",
-        ];
-
-        // EVENT STATUS
-        let postponed =
-          event.competitions[0].status.type.description === "Postponed";
-        let canceled =
-          event.competitions[0].status.type.description === "Canceled";
-
-        // TIME
-        const matchTime = event.date;
-        const utcTime = new Date(matchTime);
-        const options = {
-          hour12: true,
-          hour: "numeric",
-          minute: "2-digit",
-        };
-        const formattedTime = utcTime.toLocaleString("en-US", options);
-
-        // EVENT NAME
-        // const eventName = event.name;
-
-        // HOME TEAM
-        let homeTeamLogo = "";
-        if (event.competitions[0].competitors[0].team.logo !== undefined) {
-          homeTeamLogo = event.competitions[0].competitors[0].team.logo;
-        }
-        const homeTeam = event.competitions[0].competitors[0].team.name;
-        let homeTeamForm = "";
-        if (event.competitions[0].competitors[0].form !== undefined) {
-          homeTeamForm = event.competitions[0].competitors[0].form;
-        }
-        const homeTeamWins = [...homeTeamForm].filter(
-          (char) => char.toLowerCase() === "w",
-        ).length;
-
-        // AWAY TEAM
-        let awayTeamLogo = "";
-        if (event.competitions[0].competitors[1].team.logo !== undefined) {
-          awayTeamLogo = event.competitions[0].competitors[1].team.logo;
-        }
-        const awayTeam = event.competitions[0].competitors[1].team.name;
-        let awayTeamForm = "";
-        if (event.competitions[0].competitors[1].form) {
-          awayTeamForm = event.competitions[0].competitors[1].form;
-        }
-        const awayTeamWins = [...awayTeamForm].filter(
-          (char) => char.toLowerCase() === "w",
-        ).length;
-
-        // PROJECTED WINNER
-        let winner = "";
-        if (
-          (homeTeamWins >= 3 &&
-            awayTeamWins <= 2 &&
-            homeTeamWins - awayTeamWins >= 3) ||
-          (homeTeamWins === 5 && awayTeamWins <= 3)
-        ) {
-          winner = homeTeam;
-        }
-
-        if (
-          (awayTeamWins >= 3 &&
-            homeTeamWins <= 2 &&
-            awayTeamWins - homeTeamWins >= 3) ||
-          (awayTeamWins === 5 && homeTeamWins <= 3)
-        ) {
-          winner = awayTeam;
-        }
-
-        // RECORD
-        const record = `${homeTeamWins}-${awayTeamWins}`;
-
-        // ODDS
-        let odds = "";
-        if (
-          event.competitions[0].odds &&
-          event.competitions[0].odds[0] &&
-          event.competitions[0].odds[0].details !== undefined
-        ) {
-          odds = event.competitions[0].odds[0].details;
-        }
-
-        // MATCH OBJECT
-        const matchObject = new Match(
-          `${league}`,
-          `${leagueName}`,
-          `${leagueType}`,
-          `${formattedTime}`,
-          `${homeTeamLogo}`,
-          `${homeTeam}`,
-          `${homeTeamForm}`,
-          `${homeTeamWins}`,
-          `${awayTeamLogo}`,
-          `${awayTeam}`,
-          `${awayTeamForm}`,
-          `${awayTeamWins}`,
-          `${winner}`,
-          `${record}`,
-          `${odds}`,
-        );
-
-        // ADD TO matchesByLeague & winnersTable ARRAYS
-        // if league is not excluded, & match is not postponed, & there is a winner
-        if (
-          !excludedLeagues.includes(leagueName) &&
-          !excludedLeagues.includes(leagueType) &&
-          !postponed &&
-          !canceled &&
-          winner
-        ) {
-          // if league does not already exist in matchesByLeague array, create array for league
-          if (!matchesByLeague[league]) {
-            matchesByLeague[league] = [];
-          }
-          // push the match object to its respective league array
-          matchesByLeague[league].push(matchObject);
-          // push the match to winnersTable array
-          winnersTable.push(matchObject);
-        }
-      }
-
-      // CREATE & APPEND ELEMENTS
-      // section element
-      const section = document.createElement("section");
-      section.classList.add("flex", "flex-col", "pb-8");
-
-      // h2 element
-      const h2 = document.createElement("h2");
-      h2.classList.add("pb-4", "pl-2", "text-xl");
-      h2.textContent = date === todaysDate ? "TODAY" : "TOMORROW";
-
-      // cardDiv element
-      const cardDiv = document.createElement("div");
-      cardDiv.classList.add(
-        "flex",
-        "flex-col",
-        "divide-y",
-        "rounded-3xl",
-        "border",
-        "px-2",
-      );
-
-      section.appendChild(h2);
-      section.appendChild(cardDiv);
-
-      // loop through leagues
-      for (const league in matchesByLeague) {
-        // create leagueTableDiv element
-        const leagueTableDiv = document.createElement("div");
-        leagueTableDiv.classList.add("py-4");
-        cardDiv.appendChild(leagueTableDiv);
-
-        // leagueRowDiv element
-        const leagueRowDiv = document.createElement("div");
-        leagueRowDiv.classList.add("flex", "items-center", "pb-2");
-        leagueTableDiv.appendChild(leagueRowDiv);
-
-        // // flagLogoColumnDiv element
-        // const flagLogoColumnDiv = document.createElement("div");
-        // flagLogoColumnDiv.classList.add("w-20", "text-center");
-        // flagLogoColumnDiv.textContent = "flag / logo";
-        // leagueRowDiv.appendChild(flagLogoColumnDiv);
-        // // countryLeagueColumnDiv element
-        // const countryLeagueColumnDiv = document.createElement("div");
-        // countryLeagueColumnDiv.classList.add("flex", "flex-col", "pl-4");
-        // leagueRowDiv.appendChild(countryLeagueColumnDiv);
-        // // countryDiv element
-        // const countryDiv = document.createElement("div");
-        // countryDiv.textContent = "Country";
-        // countryLeagueColumnDiv.appendChild(countryDiv);
-
-        // leagueDiv element
-        const leagueDiv = document.createElement("div");
-        leagueDiv.textContent = `${matchesByLeague[league][0].leagueName}`;
-        // countryLeagueColumnDiv.appendChild(leagueDiv);
-        leagueRowDiv.appendChild(leagueDiv);
-
-        // loop through matches
-        for (const match of matchesByLeague[league]) {
-          // create matchRowDiv element
-          const matchRowDiv = document.createElement("div");
-          matchRowDiv.classList.add(
-            "flex",
-            "items-center",
-            "divide-x",
-            "h-24",
-            "mb-2",
-            "lg:h-16",
-            "lg:mb-0",
-          );
-          leagueTableDiv.appendChild(matchRowDiv);
-
-          // timeColumnDiv element
-          const timeColumnDiv = document.createElement("div");
-          timeColumnDiv.classList.add("w-20", "text-center");
-          timeColumnDiv.textContent = `${match.formattedTime}`;
-          matchRowDiv.appendChild(timeColumnDiv);
-
-          // homeAwayColumnDiv element
-          const homeAwayColumnDiv = document.createElement("div");
-          homeAwayColumnDiv.classList.add("flex", "flex-col", "lg:w-96");
-          matchRowDiv.appendChild(homeAwayColumnDiv);
-
-          // homeDiv element
-          const homeDiv = document.createElement("div");
-          homeDiv.classList.add("flex", "gap-1", "px-1");
-          const homeLogoDiv = document.createElement("div");
-          homeLogoDiv.classList.add("flex", "items-center");
-          const homeLogoImg = document.createElement("img");
-          homeLogoImg.classList.add("h-6", "object-contain");
-          homeLogoImg.src = match.homeTeamLogo;
-          homeLogoImg.alt = "Logo";
-          homeLogoDiv.appendChild(homeLogoImg);
-          // homeDiv.appendChild(homeLogoDiv);
-          const homeNameDiv = document.createElement("div");
-          homeNameDiv.classList.add("w-36", "lg:w-72");
-          homeNameDiv.textContent = `${match.homeTeam}`;
-          homeDiv.appendChild(homeNameDiv);
-          const homeFormDiv = document.createElement("div");
-          homeFormDiv.classList.add("hidden", "md:block", "ml-auto");
-          homeFormDiv.textContent = `${match.homeTeamForm}`;
-          homeDiv.appendChild(homeFormDiv);
-          homeAwayColumnDiv.appendChild(homeDiv);
-
-          // awayDiv element
-          const awayDiv = document.createElement("div");
-          awayDiv.classList.add("flex", "gap-1", "px-1");
-          const awayLogoDiv = document.createElement("div");
-          awayLogoDiv.classList.add("flex", "items-center");
-          const awayLogoImg = document.createElement("img");
-          awayLogoImg.classList.add("h-6", "object-contain");
-          awayLogoImg.src = match.awayTeamLogo;
-          awayLogoImg.alt = "Logo";
-          awayLogoDiv.appendChild(awayLogoImg);
-          // awayDiv.appendChild(awayLogoDiv);
-          const awayNameDiv = document.createElement("div");
-          awayNameDiv.classList.add("w-36", "lg:w-72");
-          awayNameDiv.textContent = `${match.awayTeam}`;
-          awayDiv.appendChild(awayNameDiv);
-          const awayFormDiv = document.createElement("div");
-          awayFormDiv.classList.add("hidden", "md:block", "ml-auto");
-          awayFormDiv.textContent = `${match.awayTeamForm}`;
-          awayDiv.appendChild(awayFormDiv);
-          homeAwayColumnDiv.appendChild(awayDiv);
-
-          // winnerRecordColumnDiv element
-          const winnerRecordColumnDiv = document.createElement("div");
-          winnerRecordColumnDiv.classList.add(
-            "flex",
-            "w-40",
-            "lg:w-72",
-            "flex-col",
-            "text-center",
-            "px-1",
-          );
-          matchRowDiv.appendChild(winnerRecordColumnDiv);
-
-          // winnerDiv element
-          const winnerDiv = document.createElement("div");
-          winnerDiv.textContent = `${match.winner}`;
-          winnerRecordColumnDiv.appendChild(winnerDiv);
-
-          // recordDiv element
-          const recordDiv = document.createElement("div");
-          recordDiv.textContent = `${match.record}`;
-          winnerRecordColumnDiv.appendChild(recordDiv);
-
-          // oddsColumnDiv element
-          const oddsColumnDiv = document.createElement("div");
-          oddsColumnDiv.classList.add(
-            "hidden",
-            "md:block",
-            "w-12",
-            "lg:w-16",
-            "pr-1",
-            "text-right",
-          );
-          oddsColumnDiv.textContent = `${match.odds}`;
-          matchRowDiv.appendChild(oddsColumnDiv);
-        }
-      }
-
-      // append to element with id "main"
-      const main = document.getElementById("main");
-      main.appendChild(section);
-
-      // CONSOLE
-      // TODAY OR TOMORROW
-      date === todaysDate ? console.log("TODAY") : console.log("TOMORROW");
-
-      // // TABLE TO BE PRINTED TO CONSOLE
-      // const tableToPrint = winnersTable.map(
-      //   ({
-      //     leagueName,
-      //     formattedTime,
-      //     homeTeamForm,
-      //     homeTeam,
-      //     awayTeam,
-      //     awayTeamForm,
-      //     winner,
-      //     record,
-      //     odds,
-      //   }) => {
-      //     return {
-      //       leagueName,
-      //       formattedTime,
-      //       homeTeamForm,
-      //       homeTeam,
-      //       awayTeam,
-      //       awayTeamForm,
-      //       winner,
-      //       record,
-      //       odds,
-      //     };
-      //   },
-      // );
-
-      // // console.table
-      // console.table(tableToPrint);
-
-      // TABLE BY LEAGUE TO BE PRINTED TO CONSOLE
-      for (const league in matchesByLeague) {
-        const tablebyLeagueToPrint = matchesByLeague[league].map(
-          ({
-            leagueName,
-            formattedTime,
-            homeTeamForm,
-            homeTeam,
-            awayTeam,
-            awayTeamForm,
-            winner,
-            record,
-            odds,
-          }) => {
-            return {
-              leagueName,
-              formattedTime,
-              homeTeamForm,
-              homeTeam,
-              awayTeam,
-              awayTeamForm,
-              winner,
-              record,
-              odds,
-            };
-          },
-        );
-
-        // console.table
-        console.table(tablebyLeagueToPrint);
-      }
-    } catch (err) {
-      console.log(`error ${err}`);
-    }
-  }
-
-  (async () => {
-    await getFetch(todaysDate);
-    await getFetch(tomorrowsDate);
-  })();
-</script>
+	{/* 📅 Tomorrow's matches */}
+	<section aria-labelledby='tomorrow-heading'>
+		<h2
+			id='tomorrow-heading'
+			class='pb-4 pl-2 text-xl font-semibold text-white'
+		>
+			TOMORROW
+		</h2>
+		{
+			hasTomorrowMatches ? (
+				<div class='flex flex-col gap-2'>
+					{/* 🔄 Loop through leagues and render the HTML string for each */}
+					{Object.entries(tomorrowMatchesGrouped).map(
+						([leagueKey, matches]) => (
+							<Fragment set:html={renderLeagueHTML(matches)} />
+						)
+					)}
+				</div>
+			) : (
+				<div class='rounded-lg border bg-zinc-800 p-4 text-center text-zinc-400'>
+					No qualifying matches found for tomorrow.
+				</div>
+			)
+		}
+	</section>
+</main>
